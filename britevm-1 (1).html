@@ -1,0 +1,952 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BriteVM — The New Way to Send Money</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --black:   #0A0A0F;
+    --deep:    #0F0F1A;
+    --panel:   #14141F;
+    --border:  #1E1E2E;
+    --brite:   #00E5FF;
+    --brite2:  #7B61FF;
+    --gold:    #FFD166;
+    --white:   #F0F0F8;
+    --muted:   #8888AA;
+    --success: #06D6A0;
+    --font-display: 'Instrument Serif', Georgia, serif;
+    --font-body: 'Space Grotesk', sans-serif;
+    --font-mono: 'Space Mono', monospace;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--black);
+    color: var(--white);
+    font-family: var(--font-body);
+    font-size: 16px;
+    line-height: 1.6;
+    overflow-x: hidden;
+  }
+
+  /* ── NAV ── */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 1.2rem 4rem;
+    background: rgba(10,10,15,0.85);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+  }
+  .nav-logo {
+    font-family: var(--font-mono);
+    font-size: 1.1rem;
+    color: var(--brite);
+    letter-spacing: 0.08em;
+    text-decoration: none;
+  }
+  .nav-logo span { color: var(--white); }
+  .nav-links { display: flex; gap: 2.5rem; list-style: none; }
+  .nav-links a {
+    color: var(--muted);
+    text-decoration: none;
+    font-size: 0.875rem;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    transition: color 0.2s;
+  }
+  .nav-links a:hover { color: var(--white); }
+  .nav-cta {
+    background: var(--brite);
+    color: var(--black);
+    padding: 0.55rem 1.4rem;
+    border-radius: 6px;
+    font-size: 0.875rem;
+    font-weight: 700;
+    text-decoration: none;
+    font-family: var(--font-mono);
+    transition: opacity 0.2s;
+  }
+  .nav-cta:hover { opacity: 0.85; }
+
+  /* ── HERO ── */
+  .hero {
+    min-height: 100vh;
+    display: flex; align-items: center; justify-content: center;
+    padding: 8rem 4rem 6rem;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero-grid {
+    position: absolute; inset: 0;
+    background-image:
+      linear-gradient(rgba(0,229,255,0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,229,255,0.04) 1px, transparent 1px);
+    background-size: 60px 60px;
+    mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, black 30%, transparent 100%);
+  }
+  .hero-glow {
+    position: absolute;
+    width: 600px; height: 600px;
+    background: radial-gradient(circle, rgba(0,229,255,0.08) 0%, transparent 70%);
+    top: 50%; left: 50%; transform: translate(-50%, -50%);
+    pointer-events: none;
+  }
+  .hero-content {
+    max-width: 860px;
+    text-align: center;
+    position: relative; z-index: 1;
+  }
+  .hero-eyebrow {
+    display: inline-block;
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    color: var(--brite);
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    margin-bottom: 1.5rem;
+    padding: 0.35rem 1rem;
+    border: 1px solid rgba(0,229,255,0.25);
+    border-radius: 100px;
+  }
+  .hero-title {
+    font-family: var(--font-display);
+    font-size: clamp(3rem, 7vw, 5.5rem);
+    line-height: 1.1;
+    margin-bottom: 1.5rem;
+    color: var(--white);
+  }
+  .hero-title em {
+    font-style: italic;
+    color: var(--brite);
+  }
+  .hero-sub {
+    font-size: 1.2rem;
+    color: var(--muted);
+    max-width: 580px;
+    margin: 0 auto 2.5rem;
+    line-height: 1.7;
+  }
+  .hero-sub strong { color: var(--white); font-weight: 600; }
+  .hero-actions { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
+  .btn-primary {
+    background: var(--brite);
+    color: var(--black);
+    padding: 0.85rem 2rem;
+    border-radius: 8px;
+    font-weight: 700;
+    font-family: var(--font-mono);
+    font-size: 0.9rem;
+    text-decoration: none;
+    transition: opacity 0.2s, transform 0.2s;
+  }
+  .btn-primary:hover { opacity: 0.9; transform: translateY(-1px); }
+  .btn-secondary {
+    border: 1px solid var(--border);
+    color: var(--white);
+    padding: 0.85rem 2rem;
+    border-radius: 8px;
+    font-weight: 500;
+    font-size: 0.9rem;
+    text-decoration: none;
+    transition: border-color 0.2s;
+  }
+  .btn-secondary:hover { border-color: var(--brite); }
+
+  /* ── PROBLEM SECTION ── */
+  .section { padding: 6rem 4rem; }
+  .section-inner { max-width: 1100px; margin: 0 auto; }
+  .section-label {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--brite);
+    margin-bottom: 1rem;
+  }
+  .section-title {
+    font-family: var(--font-display);
+    font-size: clamp(2rem, 4vw, 3rem);
+    line-height: 1.15;
+    margin-bottom: 1.5rem;
+  }
+  .section-title em { font-style: italic; color: var(--gold); }
+
+  .problem-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2px;
+    margin-top: 3rem;
+    border-radius: 12px;
+    overflow: hidden;
+  }
+  .problem-card {
+    background: var(--panel);
+    padding: 2.5rem;
+  }
+  .problem-card.old { border-left: 3px solid #FF6B6B; }
+  .problem-card.new { border-left: 3px solid var(--success); }
+  .problem-card-label {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    margin-bottom: 1.5rem;
+  }
+  .old .problem-card-label { color: #FF6B6B; }
+  .new .problem-card-label { color: var(--success); }
+  .problem-item {
+    display: flex; align-items: flex-start; gap: 0.75rem;
+    margin-bottom: 1.2rem;
+    font-size: 0.95rem;
+    color: var(--muted);
+  }
+  .problem-item .icon { font-size: 1.1rem; margin-top: 0.1rem; flex-shrink: 0; }
+  .problem-item strong { color: var(--white); display: block; font-size: 0.9rem; margin-bottom: 0.2rem; }
+
+  /* ── HOW IT WORKS ── */
+  .how-section { background: var(--deep); }
+  .flow-visual {
+    display: flex;
+    align-items: stretch;
+    gap: 0;
+    margin-top: 3.5rem;
+    position: relative;
+  }
+  .flow-step {
+    flex: 1;
+    background: var(--panel);
+    padding: 2rem 1.75rem;
+    position: relative;
+    border: 1px solid var(--border);
+  }
+  .flow-step:first-child { border-radius: 12px 0 0 12px; }
+  .flow-step:last-child { border-radius: 0 12px 12px 0; }
+  .flow-arrow {
+    display: flex; align-items: center; justify-content: center;
+    width: 40px; flex-shrink: 0;
+    background: var(--deep);
+    color: var(--brite);
+    font-size: 1.2rem;
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    z-index: 1;
+  }
+  .flow-num {
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    color: var(--brite);
+    letter-spacing: 0.15em;
+    margin-bottom: 0.75rem;
+  }
+  .flow-title {
+    font-size: 1rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    color: var(--white);
+  }
+  .flow-desc {
+    font-size: 0.85rem;
+    color: var(--muted);
+    line-height: 1.6;
+  }
+  .flow-tag {
+    display: inline-block;
+    margin-top: 1rem;
+    padding: 0.25rem 0.6rem;
+    background: rgba(0,229,255,0.08);
+    border: 1px solid rgba(0,229,255,0.2);
+    border-radius: 4px;
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    color: var(--brite);
+    letter-spacing: 0.1em;
+  }
+
+  /* ── EVM EDUCATION ── */
+  .evm-section {}
+  .evm-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 3rem;
+    margin-top: 3rem;
+    align-items: start;
+  }
+  .evm-explainer {}
+  .evm-explainer p {
+    color: var(--muted);
+    margin-bottom: 1rem;
+    line-height: 1.75;
+    font-size: 0.95rem;
+  }
+  .evm-explainer p strong { color: var(--white); }
+  .evm-visual {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 2rem;
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+  }
+  .evm-visual-title {
+    color: var(--muted);
+    font-size: 0.65rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    margin-bottom: 1.5rem;
+  }
+  .chain-row {
+    display: flex; align-items: center; gap: 0.75rem;
+    margin-bottom: 0.85rem;
+  }
+  .chain-dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .chain-label { color: var(--white); font-size: 0.8rem; }
+  .chain-sub { color: var(--muted); font-size: 0.7rem; margin-left: auto; }
+  .chain-divider {
+    border: none;
+    border-top: 1px dashed var(--border);
+    margin: 1.25rem 0;
+  }
+  .evm-note {
+    font-size: 0.75rem;
+    color: var(--muted);
+    line-height: 1.5;
+  }
+  .evm-note strong { color: var(--brite); }
+
+  /* ── SWAP EXPLAINER ── */
+  .swap-section { background: var(--deep); }
+  .swap-cards {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
+    margin-top: 3rem;
+  }
+  .swap-card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 2rem;
+    transition: border-color 0.2s;
+  }
+  .swap-card:hover { border-color: rgba(0,229,255,0.3); }
+  .swap-icon {
+    width: 48px; height: 48px;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.4rem;
+    margin-bottom: 1.25rem;
+    background: rgba(0,229,255,0.07);
+  }
+  .swap-card h3 {
+    font-size: 1rem;
+    font-weight: 700;
+    margin-bottom: 0.6rem;
+    color: var(--white);
+  }
+  .swap-card p {
+    font-size: 0.85rem;
+    color: var(--muted);
+    line-height: 1.65;
+  }
+
+  /* ── REMITTANCE COMPARE ── */
+  .compare-section {}
+  .compare-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 3rem;
+    border-radius: 12px;
+    overflow: hidden;
+  }
+  .compare-table th {
+    background: var(--panel);
+    padding: 1rem 1.5rem;
+    text-align: left;
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    letter-spacing: 0.1em;
+    color: var(--muted);
+    text-transform: uppercase;
+    border-bottom: 1px solid var(--border);
+  }
+  .compare-table th.highlight { color: var(--brite); }
+  .compare-table td {
+    padding: 1.1rem 1.5rem;
+    font-size: 0.9rem;
+    border-bottom: 1px solid var(--border);
+    color: var(--muted);
+    background: var(--deep);
+  }
+  .compare-table td:first-child { color: var(--white); font-weight: 500; }
+  .compare-table td.highlight {
+    color: var(--success);
+    font-weight: 600;
+    background: rgba(6,214,160,0.04);
+  }
+  .compare-table td.bad { color: #FF6B6B; }
+  .compare-table tr:last-child td { border-bottom: none; }
+
+  /* ── TOKEN EXPLAINER ── */
+  .token-section { background: var(--deep); }
+  .token-grid {
+    display: grid;
+    grid-template-columns: 1.2fr 1fr;
+    gap: 4rem;
+    margin-top: 3rem;
+    align-items: start;
+  }
+  .token-facts { }
+  .token-fact {
+    display: flex; gap: 1.25rem;
+    margin-bottom: 2rem;
+    padding-bottom: 2rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .token-fact:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+  .token-fact-icon {
+    width: 42px; height: 42px; flex-shrink: 0;
+    background: rgba(123,97,255,0.1);
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.2rem;
+  }
+  .token-fact-body h4 { font-size: 0.95rem; font-weight: 700; margin-bottom: 0.35rem; }
+  .token-fact-body p { font-size: 0.85rem; color: var(--muted); line-height: 1.6; }
+  .token-stats {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+  .token-stat {
+    padding: 1.5rem 2rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .token-stat:last-child { border-bottom: none; }
+  .token-stat-label {
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 0.4rem;
+  }
+  .token-stat-value {
+    font-family: var(--font-mono);
+    font-size: 1.2rem;
+    color: var(--white);
+    font-weight: 700;
+  }
+  .token-stat-value.brite { color: var(--brite); }
+  .token-stat-value.gold { color: var(--gold); }
+  .token-stat-sub {
+    font-size: 0.75rem;
+    color: var(--muted);
+    margin-top: 0.2rem;
+  }
+
+  /* ── TELEGRAM CTA ── */
+  .telegram-section {
+    padding: 6rem 4rem;
+    background: linear-gradient(135deg, rgba(0,229,255,0.05) 0%, rgba(123,97,255,0.05) 100%);
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    text-align: center;
+  }
+  .telegram-section .section-title { margin-bottom: 1rem; }
+  .telegram-section p {
+    color: var(--muted);
+    max-width: 520px;
+    margin: 0 auto 2.5rem;
+    font-size: 1rem;
+    line-height: 1.7;
+  }
+  .telegram-btn {
+    display: inline-flex; align-items: center; gap: 0.6rem;
+    background: #229ED9;
+    color: white;
+    padding: 0.9rem 2rem;
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: 0.95rem;
+    text-decoration: none;
+    transition: opacity 0.2s;
+  }
+  .telegram-btn:hover { opacity: 0.9; }
+
+  /* ── FOOTER ── */
+  footer {
+    background: var(--black);
+    border-top: 1px solid var(--border);
+    padding: 3rem 4rem;
+  }
+  .footer-inner {
+    max-width: 1100px; margin: 0 auto;
+    display: flex; justify-content: space-between; align-items: center;
+    flex-wrap: wrap; gap: 1.5rem;
+  }
+  .footer-brand {
+    font-family: var(--font-mono);
+    font-size: 1rem;
+    color: var(--brite);
+  }
+  .footer-brand span { color: var(--muted); }
+  .footer-links { display: flex; gap: 2rem; list-style: none; }
+  .footer-links a {
+    color: var(--muted); text-decoration: none;
+    font-size: 0.8rem; transition: color 0.2s;
+  }
+  .footer-links a:hover { color: var(--white); }
+  .footer-legal {
+    width: 100%;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border);
+    font-size: 0.75rem;
+    color: var(--muted);
+    line-height: 1.6;
+  }
+
+  /* ── ANIMATIONS ── */
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+  }
+  .live-dot {
+    display: inline-block;
+    width: 8px; height: 8px;
+    background: var(--success);
+    border-radius: 50%;
+    margin-right: 6px;
+    animation: pulse 2s infinite;
+  }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 900px) {
+    nav { padding: 1rem 1.5rem; }
+    .nav-links { display: none; }
+    .section { padding: 4rem 1.5rem; }
+    .hero { padding: 7rem 1.5rem 4rem; }
+    .problem-grid { grid-template-columns: 1fr; }
+    .flow-visual { flex-direction: column; }
+    .flow-step { border-radius: 12px !important; }
+    .flow-arrow { display: none; }
+    .evm-grid { grid-template-columns: 1fr; }
+    .swap-cards { grid-template-columns: 1fr; }
+    .token-grid { grid-template-columns: 1fr; gap: 2rem; }
+    .compare-table { font-size: 0.8rem; }
+    .compare-table th, .compare-table td { padding: 0.8rem 0.75rem; }
+    .telegram-section { padding: 4rem 1.5rem; }
+    footer { padding: 2rem 1.5rem; }
+    .footer-inner { flex-direction: column; align-items: flex-start; }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a class="nav-logo" href="#">Brite<span>VM</span></a>
+  <ul class="nav-links">
+    <li><a href="#how-it-works">How It Works</a></li>
+    <li><a href="#what-is-evm">What is EVM</a></li>
+    <li><a href="#token">The Token</a></li>
+    <li><a href="#compare">Compare</a></li>
+  </ul>
+  <a class="nav-cta" href="https://t.me/Novaglobalkeysbot" target="_blank">Launch App →</a>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-grid"></div>
+  <div class="hero-glow"></div>
+  <div class="hero-content">
+    <div class="hero-eyebrow"><span class="live-dot"></span>Live on Base Mainnet</div>
+    <h1 class="hero-title">
+      Send money anywhere.<br>
+      <em>Instantly. For almost nothing.</em>
+    </h1>
+    <p class="hero-sub">
+      BriteVM is the <strong>crypto-native remittance network</strong> — 
+      built on Ethereum's blockchain technology so anyone can send value 
+      across borders the same way you send a Telegram message.
+    </p>
+    <div class="hero-actions">
+      <a href="https://t.me/Novaglobalkeysbot" target="_blank" class="btn-primary">Send Money Now</a>
+      <a href="#how-it-works" class="btn-secondary">See How It Works</a>
+    </div>
+  </div>
+</section>
+
+<!-- PROBLEM -->
+<section class="section">
+  <div class="section-inner">
+    <div class="section-label">The Problem</div>
+    <h2 class="section-title">International transfers are <em>broken</em></h2>
+    <div class="problem-grid">
+      <div class="problem-card old">
+        <div class="problem-card-label">❌ The Old Way (Banks / Western Union)</div>
+        <div class="problem-item">
+          <span class="icon">💸</span>
+          <div><strong>5–10% fees eaten on every transfer</strong>Send £1,000, your family receives £920.</div>
+        </div>
+        <div class="problem-item">
+          <span class="icon">🕐</span>
+          <div><strong>3–5 business days to arrive</strong>Your family waits. Bills don't.</div>
+        </div>
+        <div class="problem-item">
+          <span class="icon">🏦</span>
+          <div><strong>Needs a bank account</strong>1.4 billion adults worldwide are unbanked.</div>
+        </div>
+        <div class="problem-item">
+          <span class="icon">📋</span>
+          <div><strong>Forms, IDs, limits, rejections</strong>You're asking permission to move your own money.</div>
+        </div>
+      </div>
+      <div class="problem-card new">
+        <div class="problem-card-label">✅ The BriteVM Way</div>
+        <div class="problem-item">
+          <span class="icon">⚡</span>
+          <div><strong>Under 1% fee, always</strong>Send £1,000, your family receives £992+.</div>
+        </div>
+        <div class="problem-item">
+          <span class="icon">🚀</span>
+          <div><strong>Arrives in seconds</strong>Blockchain settles in one block. ~2 seconds on Base.</div>
+        </div>
+        <div class="problem-item">
+          <span class="icon">📱</span>
+          <div><strong>Just a Telegram account</strong>No bank needed. No branch. No forms.</div>
+        </div>
+        <div class="problem-item">
+          <span class="icon">🔓</span>
+          <div><strong>Permissionless by design</strong>No one can freeze, block, or delay your transfer.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section class="section how-section" id="how-it-works">
+  <div class="section-inner">
+    <div class="section-label">The Process</div>
+    <h2 class="section-title">Four steps. That's the whole thing.</h2>
+    <div class="flow-visual">
+
+      <div class="flow-step">
+        <div class="flow-num">STEP 01</div>
+        <div class="flow-title">You swap into the token</div>
+        <div class="flow-desc">Open the BriteVM bot on Telegram. Swap your USDC or USDT into our remittance token at the current market rate via Uniswap.</div>
+        <span class="flow-tag">DEX SWAP</span>
+      </div>
+
+      <div class="flow-arrow">→</div>
+
+      <div class="flow-step">
+        <div class="flow-num">STEP 02</div>
+        <div class="flow-title">Send via Telegram</div>
+        <div class="flow-desc">Type a simple command in the bot. Your tokens move on-chain to the recipient's wallet address in seconds. No bank details needed.</div>
+        <span class="flow-tag">ON-CHAIN TX</span>
+      </div>
+
+      <div class="flow-arrow">→</div>
+
+      <div class="flow-step">
+        <div class="flow-num">STEP 03</div>
+        <div class="flow-title">Receiver swaps out</div>
+        <div class="flow-desc">The recipient uses the same bot to swap back into USDC or USDT — stablecoins pegged to the dollar. Their local money, delivered.</div>
+        <span class="flow-tag">DEX SWAP</span>
+      </div>
+
+      <div class="flow-arrow">→</div>
+
+      <div class="flow-step">
+        <div class="flow-num">STEP 04</div>
+        <div class="flow-title">BriteVM earns a tiny fee</div>
+        <div class="flow-desc">A small percentage of each swap goes to liquidity providers and BriteVM. That's the whole business model — transparent, on-chain, auditable.</div>
+        <span class="flow-tag">0.3% FEE TIER</span>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- WHAT IS EVM -->
+<section class="section evm-section" id="what-is-evm">
+  <div class="section-inner">
+    <div class="section-label">Under the Hood</div>
+    <h2 class="section-title">What is EVM and why does it matter?</h2>
+    <div class="evm-grid">
+      <div class="evm-explainer">
+        <p>
+          <strong>EVM stands for Ethereum Virtual Machine.</strong> Think of it as the global computer 
+          that runs the internet of money. It's a shared system — thousands of computers around the 
+          world run it simultaneously — and nobody owns it.
+        </p>
+        <p>
+          When you send money using BriteVM, you're not asking a bank to move a number in their database. 
+          You're writing a transaction onto a <strong>public, permanent ledger</strong> that every 
+          participant in the network can verify. No middleman. No trust required.
+        </p>
+        <p>
+          BriteVM is built on <strong>Base</strong> — an EVM-compatible blockchain developed by Coinbase. 
+          Base inherits Ethereum's security while processing transactions 10x faster and 100x cheaper. 
+          The same code that runs on Ethereum runs on Base, unchanged.
+        </p>
+        <p>
+          This is why crypto remittance is fundamentally different from PayPal or Wise. Those services 
+          are still moving money through the old banking rails — they just put a nicer app on top. 
+          <strong>BriteVM moves value directly, peer to peer, with no rails in between.</strong>
+        </p>
+      </div>
+      <div class="evm-visual">
+        <div class="evm-visual-title">EVM-Compatible Networks</div>
+
+        <div class="chain-row">
+          <div class="chain-dot" style="background:#627EEA"></div>
+          <span class="chain-label">Ethereum Mainnet</span>
+          <span class="chain-sub">The original</span>
+        </div>
+        <div class="chain-row">
+          <div class="chain-dot" style="background:#0052FF"></div>
+          <span class="chain-label">Base ← BriteVM lives here</span>
+          <span class="chain-sub">Built by Coinbase</span>
+        </div>
+        <div class="chain-row">
+          <div class="chain-dot" style="background:#8247E5"></div>
+          <span class="chain-label">Polygon</span>
+          <span class="chain-sub">EVM-compatible</span>
+        </div>
+        <div class="chain-row">
+          <div class="chain-dot" style="background:#FF0420"></div>
+          <span class="chain-label">Optimism</span>
+          <span class="chain-sub">EVM-compatible</span>
+        </div>
+        <div class="chain-row">
+          <div class="chain-dot" style="background:#F0B90B"></div>
+          <span class="chain-label">BNB Chain</span>
+          <span class="chain-sub">EVM-compatible</span>
+        </div>
+
+        <hr class="chain-divider">
+
+        <div class="evm-note">
+          All these chains speak the same language — EVM bytecode. 
+          A developer who knows one, knows them all. 
+          <strong>BriteVM chose Base</strong> for its low fees, 
+          Coinbase backing, and 2-second finality.
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SWAP EXPLAINED -->
+<section class="section swap-section" id="swap">
+  <div class="section-inner">
+    <div class="section-label">DeFi 101</div>
+    <h2 class="section-title">What is a swap? How does it work?</h2>
+    <div class="swap-cards">
+
+      <div class="swap-card">
+        <div class="swap-icon">🏊</div>
+        <h3>Liquidity Pools — the engine</h3>
+        <p>Instead of a traditional exchange with buyers and sellers, swaps use <em>liquidity pools</em> — smart contracts holding two tokens. Anyone can deposit tokens to earn fees. BriteVM's pool holds our token paired with USDC on Uniswap V4.</p>
+      </div>
+
+      <div class="swap-card">
+        <div class="swap-icon">🤖</div>
+        <h3>Automated Market Maker (AMM)</h3>
+        <p>A smart contract sets the price automatically using a simple formula: as you buy one token, it becomes more expensive. No humans, no order books, no manipulation. The math runs 24/7 on the blockchain.</p>
+      </div>
+
+      <div class="swap-card">
+        <div class="swap-icon">⚡</div>
+        <h3>Atomic Execution</h3>
+        <p>When you swap, the entire transaction happens in one block — one moment in time. Either everything completes, or nothing does. You can never be left with half a transaction. This is what "trustless" actually means.</p>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- COMPARE -->
+<section class="section compare-section" id="compare">
+  <div class="section-inner">
+    <div class="section-label">Side by Side</div>
+    <h2 class="section-title">BriteVM vs. the incumbents</h2>
+    <table class="compare-table">
+      <thead>
+        <tr>
+          <th>Feature</th>
+          <th>Western Union</th>
+          <th>PayPal / Wise</th>
+          <th class="highlight">BriteVM</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Transfer Fee</td>
+          <td class="bad">5–10%</td>
+          <td class="bad">1.5–3%</td>
+          <td class="highlight">~0.3–0.6%</td>
+        </tr>
+        <tr>
+          <td>Settlement Time</td>
+          <td class="bad">1–5 days</td>
+          <td class="bad">Minutes to 2 days</td>
+          <td class="highlight">~2 seconds</td>
+        </tr>
+        <tr>
+          <td>Bank Account Required</td>
+          <td class="bad">Yes</td>
+          <td class="bad">Yes</td>
+          <td class="highlight">No</td>
+        </tr>
+        <tr>
+          <td>Available 24/7</td>
+          <td class="bad">No</td>
+          <td>Partial</td>
+          <td class="highlight">Yes — always</td>
+        </tr>
+        <tr>
+          <td>Auditable / Transparent</td>
+          <td class="bad">No</td>
+          <td class="bad">No</td>
+          <td class="highlight">Fully on-chain</td>
+        </tr>
+        <tr>
+          <td>Can be frozen / blocked</td>
+          <td class="bad">Yes</td>
+          <td class="bad">Yes</td>
+          <td class="highlight">No</td>
+        </tr>
+        <tr>
+          <td>Requires ID / KYC</td>
+          <td class="bad">Yes</td>
+          <td class="bad">Yes</td>
+          <td class="highlight">No (non-custodial)</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- TOKEN -->
+<section class="section token-section" id="token">
+  <div class="section-inner">
+    <div class="section-label">The Token</div>
+    <h2 class="section-title">Designed for remittance. Not speculation.</h2>
+    <div class="token-grid">
+      <div class="token-facts">
+
+        <div class="token-fact">
+          <div class="token-fact-icon">🔒</div>
+          <div class="token-fact-body">
+            <h4>Fixed Supply — 7,000,000 tokens</h4>
+            <p>No minting. No inflation. The total supply is set in the contract and cannot be changed. What exists today is all that will ever exist.</p>
+          </div>
+        </div>
+
+        <div class="token-fact">
+          <div class="token-fact-icon">0️⃣</div>
+          <div class="token-fact-body">
+            <h4>Zero Tax</h4>
+            <p>No buy tax. No sell tax. No hidden fees baked into the token contract. The only fee you pay is the standard Uniswap swap fee — which goes to liquidity providers.</p>
+          </div>
+        </div>
+
+        <div class="token-fact">
+          <div class="token-fact-icon">🌐</div>
+          <div class="token-fact-body">
+            <h4>The Token is the Rail</h4>
+            <p>Most remittance apps use crypto behind the scenes and hide it. BriteVM makes the token the explicit mechanism — you swap in, transfer, swap out. Transparent by design.</p>
+          </div>
+        </div>
+
+        <div class="token-fact">
+          <div class="token-fact-icon">📋</div>
+          <div class="token-fact-body">
+            <h4>Deployed by BriteVM Ltd, UK</h4>
+            <p>The token is deployed by a registered UK company — not an anonymous team. The deployer wallet, contract address, and all transactions are publicly verifiable on Basescan.</p>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="token-stats">
+        <div class="token-stat">
+          <div class="token-stat-label">Contract Address (Base)</div>
+          <div class="token-stat-value brite" style="font-size:0.72rem; word-break:break-all;">0x9991bE994829601F90328CCF9cee4D1A55ADae70</div>
+        </div>
+        <div class="token-stat">
+          <div class="token-stat-label">Total Supply</div>
+          <div class="token-stat-value gold">7,000,000</div>
+          <div class="token-stat-sub">Fixed. Immutable. On-chain.</div>
+        </div>
+        <div class="token-stat">
+          <div class="token-stat-label">Token Tax</div>
+          <div class="token-stat-value brite">0%</div>
+          <div class="token-stat-sub">No buy/sell tax in contract</div>
+        </div>
+        <div class="token-stat">
+          <div class="token-stat-label">Liquidity Pool</div>
+          <div class="token-stat-value" style="font-size:0.9rem;">Uniswap V4 · 0.3% fee</div>
+          <div class="token-stat-sub">Paired with USDC on Base</div>
+        </div>
+        <div class="token-stat">
+          <div class="token-stat-label">Security Scans</div>
+          <div class="token-stat-value" style="font-size:0.85rem; color: var(--success);">✓ CertiK &nbsp;✓ GoPlus &nbsp;✓ Forta</div>
+          <div class="token-stat-sub">Clean across all scanners</div>
+        </div>
+        <div class="token-stat">
+          <div class="token-stat-label">Listed On</div>
+          <div class="token-stat-value" style="font-size:0.8rem;">CMC DEX · GeckoTerminal</div>
+          <div class="token-stat-sub">Binance Web3 · Bybit Web3</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TELEGRAM CTA -->
+<section class="telegram-section">
+  <div class="section-label" style="text-align:center;">Get Started</div>
+  <h2 class="section-title" style="text-align:center;">Your first transfer takes<br><em>under two minutes.</em></h2>
+  <p>Open the BriteVM bot on Telegram, connect your wallet, and send money anywhere in the world — right now.</p>
+  <a href="https://t.me/Novaglobalkeysbot" target="_blank" class="telegram-btn">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.894 8.221-1.97 9.28c-.145.658-.537.818-1.084.508l-3-2.21-1.447 1.394c-.16.16-.295.295-.605.295l.213-3.053 5.56-5.023c.242-.213-.054-.333-.373-.12L7.19 13.771 4.22 12.86c-.651-.204-.664-.651.136-.961l10.857-4.186c.538-.194 1.01.131.681.508z"/></svg>
+    Open BriteVM on Telegram
+  </a>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-inner">
+    <div class="footer-brand">BriteVM <span>— EVM Remittance Infrastructure</span></div>
+    <ul class="footer-links">
+      <li><a href="https://basescan.org/token/0x9991bE994829601F90328CCF9cee4D1A55ADae70" target="_blank">Basescan</a></li>
+      <li><a href="https://t.me/Novaglobalkeysbot" target="_blank">Telegram Bot</a></li>
+      <li><a href="#what-is-evm">Learn</a></li>
+    </ul>
+    <div class="footer-legal">
+      BriteVM Ltd is a UK-registered company (SIC 62012 — Software Development). This website is for informational purposes only and does not constitute financial advice. 
+      Cryptocurrency involves risk. The BriteVM token is not a security. Always do your own research before using any DeFi protocol.
+      <br>Built on Base Mainnet · Powered by Uniswap V4 · Non-custodial
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>
